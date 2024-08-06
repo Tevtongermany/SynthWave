@@ -54,6 +54,7 @@ class Music(commands.Cog):
         if not inter.author.voice:
             return await inter.send("You are not in a voice channel")
         
+        await inter.response.defer()
         if not inter.guild.voice_client:
             player = await inter.user.voice.channel.connect(cls=Player)
         else:
@@ -67,5 +68,44 @@ class Music(commands.Cog):
         if not tracks:
             return await inter.edit_original_response("No tracks found.")
         
+
+        track = tracks[0]
+        music_embed = disnake.Embed(
+            title=f"Playing Now {track.title}",
+            description=f"From {track.source}"
+        )
+        music_embed.set_thumbnail(track.artwork_url)
+        music_embed.set_author(name=track.author)
+
+        queue_embed = disnake.Embed(
+            title=f"Queueing {track.title}",
+            description=f"From {track.source}"
+        )
+        queue_embed.set_thumbnail(track.artwork_url)
+        queue_embed.set_author(name=track.author)
+
+
+        await player.play(track)
+        return await inter.edit_original_response(embed=music_embed)
+    
+    @commands.slash_command(name="stop")
+    async def stop(self,inter:disnake.CommandInteraction):
+        if not inter.author.voice:
+            return await inter.send("You are not in a voice channel")
+        
+        await inter.response.defer()
+        if not inter.guild.voice_client:
+            player = await inter.user.voice.channel.connect(cls=Player)
+        else:
+            player = inter.guild.voice_client
+
+        embed = disnake.Embed()
+        embed.title = f"Stopping {player.current.title}"
+        embed.set_author(name=f"{player.current.author}")
+        embed.set_thumbnail(player.current.artwork_url)
+        await inter.send(embed=embed)
+        await player.stop()
+
+    
 def setup(bot):
     bot.add_cog(Music(bot))

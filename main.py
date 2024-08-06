@@ -1,7 +1,10 @@
 
 import asyncio
 import os
+import signal
+import sys
 from time import sleep
+import aiohttp
 import disnake
 from disnake.ext import tasks, commands
 from dotenv import load_dotenv
@@ -14,6 +17,9 @@ intents = disnake.Intents.default()
 client = disnake.Client(intents=intents)
 
 bot = commands.InteractionBot(intents=intents, reload=True)
+
+
+
 
 
 async def bot_setup():
@@ -35,12 +41,32 @@ async def bot_setup():
             await utils.download_lavalink()
         else:
             print("Looks like Lavalink already exists! Skipping download")
+        print("You are done with the setup!")
+    
+
+    
+async def check_if_lavalink_running():
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get("http://localhost:2333/metrics") as r:
+                if r.ok:
+                    return
+        except:
+            print("Guh")
+            
+    has_right_java_version = utils.has_major_java_version(17)
+    if has_right_java_version:
+        lavalink_pid = utils.start_lavalink()
+        if isinstance(lavalink_pid,int):
+            print(f"lavalink running under pid: {lavalink_pid}")
+        else:
+            print(F"failed to start lavalink! {lavalink_pid}")
+    
+            
 
 
-
-
-
-asyncio.run(bot_setup())
+#asyncio.run(bot_setup())
+asyncio.run(check_if_lavalink_running())
 
 
 @bot.event

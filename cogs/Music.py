@@ -3,6 +3,8 @@ import disnake
 from disnake.ext import commands
 import aiohttp
 import os
+
+import mafic
 import emoji
 import globals
 import aiofiles
@@ -48,7 +50,8 @@ class Music(commands.Cog):
             if node.get_player(inter.author.guild.id) is None:
                 embed.description = "No Players Connected"
             else:
-                embed.description = f"{node.get_player(inter.author.guild.id)}"
+                if node.get_player(inter.author.guild.id).is_connected:
+                    embed.description = f"Currently Connected to {node.get_player(inter.author.guild.id).channel}"
             embeds.append(embed)
         await inter.send(embeds=embeds)
 
@@ -62,15 +65,8 @@ class Music(commands.Cog):
             player = await inter.user.voice.channel.connect(cls=Player)
         else:
             player = inter.guild.voice_client
-
         await inter.response.defer()
-
-        if query.startswith("https://"):
-            tracks = await player.fetch_tracks(query)
-        else:
-
-            tracks = await player.fetch_tracks(query, search_type=SearchType.SOUNDCLOUD)
-
+        tracks = await player.fetch_tracks(query)
         if not tracks:
             return await inter.edit_original_response("No tracks found.")
 
@@ -105,7 +101,7 @@ class Music(commands.Cog):
     @commands.slash_command(name="stop")
     async def stop(self,inter:disnake.CommandInteraction):
         if not inter.author.voice:
-            return await inter.send("You are not in a voice channel")
+            return await inter.send(embed=disnake.Embed(title="You are not in voice channel!"))
         
         await inter.response.defer()
         if not inter.guild.voice_client:
@@ -122,7 +118,7 @@ class Music(commands.Cog):
 
     @commands.slash_command(name="currently_playing")
     async def currently_playing(self,inter:disnake.CommandInteraction):
-        player : Player = inter.guild.voice_client
+        player = inter.guild.voice_client
         if player is None:
             await inter.send(embed=disnake.Embed(title="Nothing is currently playing"))  
             return
@@ -154,12 +150,30 @@ class Music(commands.Cog):
         if volume > 100:
             await inter.send(embed= disnake.Embed(title="Cannot set volume over 100!"))
             return
-
         await player.set_volume(volume)
         embed = disnake.Embed(title=f"Volume set to {volume}! :loud_sound:")
 
         await inter.send(embed=embed)
 
+    @commands.slash_command(name="skip")
+    async def skip(self, inter:disnake.CommandInteraction):
+        if not inter.author.voice:
+            return await inter.send(disnake.Embed(title="You are not in a voice channel"))
+        if not inter.guild.voice_client:
+            player = await inter.user.voice.channel.connect(cls=Player)
+        else:
+            player = inter.guild.voice_client
+        if not player.current:
+            await inter.send(embed=disnake.Embed(title="No song is playing"))
+            return
+        if not self.queue:
+            await inter.send(embed=disnake.Embed(title=f"Skipped {player.current.title}"))
+        
+            await player.stop()
+            return
+
+        await inter.send(embed=disnake.Embed(title=f"Skipped {player.current.title}"))
+        await player.play(self.queue.pop(0))
 
     @commands.slash_command(name="queue")
     async def queue(self, inter: disnake.CommandInteraction):
@@ -188,6 +202,22 @@ class Music(commands.Cog):
 
         await inter.send(embed=queue_embed)
 
+    # Hate enums in python 
+    @commands.Cog.listener()
+    async def on_track_end(self, event: TrackEndEvent):
+        player = event.player
+        reason: mafic.EndReason = event.reason
+        track = event.track
+        if event.reason is EndReason.FINISHED:
+            if self.loop:
+                await player.play(track)
+                return
+            if not self.queue:
+                return
+            track = self.queue[0]
+            await player.play(track)
+            self.queue.pop(0)
+
     async def format_time(self,milliseconds: int):
         total_seconds = milliseconds / 1000
         hours = total_seconds // 3600
@@ -208,4 +238,4 @@ class Music(commands.Cog):
             return f"{seconds}"
 def setup(bot):
     bot.add_cog(Music(bot))
-    print("Reloading")
+    print("Loaded Music Cog!")

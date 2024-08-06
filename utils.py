@@ -13,7 +13,7 @@ async def download_lavalink():
         async with session.get(globals.LAVALINK_DOWNLOAD_URL) as r:
             total_size = int(r.headers.get('Content-Length', 0))
             with tqdm.asyncio.tqdm(total=total_size, unit='B', unit_scale=True, desc="Downloading Lavalink") as pbar:
-                async with aiofiles.open("./Lavalink/Lavalink.jar", 'wb') as file:
+                async with aiofiles.open("./Lavalink.jar", 'wb') as file:
                     chunk_size = 1024
                     while True:
                         chunk = await r.content.read(chunk_size)
@@ -60,10 +60,10 @@ def has_major_java_version(Version):
 def start_lavalink():
     
     if platform.system() == 'Windows':
-        command = ['java', '-jar', "./Lavalink/Lavalink.jar"]
+        command = ['java', '-jar', "./Lavalink.jar"]
         creationflags = subprocess.CREATE_NEW_CONSOLE
     else:
-        command = ['java', '-jar', "./Lavalink/Lavalink.jar"]
+        command = ['java', '-jar', "./Lavalink.jar"]
         creationflags = 0
     try:
         process = subprocess.Popen(command, creationflags=creationflags)

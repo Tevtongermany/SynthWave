@@ -10,6 +10,7 @@ from disnake.ext import tasks, commands
 from dotenv import load_dotenv
 import utils
 import colorama
+import globals
 
 load_dotenv(".env")
 
@@ -17,10 +18,6 @@ intents = disnake.Intents.default()
 client = disnake.Client(intents=intents)
 
 bot = commands.InteractionBot(intents=intents, reload=True)
-
-os.environ['LAVALINK_CONFIG'] = './Lavalink/application.yml'
-
-
 
 async def bot_setup():
     if not os.path.exists("config.json"):
@@ -37,7 +34,7 @@ async def bot_setup():
             But Don't worry we will automatically download it for you!
             """)
         
-        if not os.path.exists("/Lavalink/Lavalink.jar"): 
+        if not os.path.exists("./Lavalink.jar"): 
             await utils.download_lavalink()
         else:
             print("Looks like Lavalink already exists! Skipping download")
@@ -72,7 +69,20 @@ asyncio.run(check_if_lavalink_running())
 
 @bot.event
 async def on_ready():
-    print(f'Bot Started!')
+    print(f'\n'
+          f'{colorama.Fore.BLUE}Synth{colorama.Fore.CYAN}Wave{colorama.Fore.RESET} V{globals.VERSION}\n'
+          f'Running on Disnake Version {disnake.__version__}'
+          )
+    
+    permissions = disnake.Permissions() 
+    permissions.connect = True 
+    permissions.speak = True 
+    permissions.send_messages = True 
+    permissions.send_messages = True 
+    permissions.manage_messages = True
+
+    invite_url = disnake.utils.oauth_url(bot.user.id, permissions=permissions)
+    print(f"Invite link: {invite_url}")
 
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):

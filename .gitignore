@@ -3,9 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 # Lavalink stuff
-Lavalink/Lavalink.jar
-Lavalink/plugins/*
-Lavalink/logs
+Lavalink.jar
+/plugins/*
+/logs
 # C extensions
 *.so
 .vscode

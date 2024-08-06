@@ -1,4 +1,5 @@
 
+import os
 import platform
 import aiofiles
 import aiohttp
@@ -57,6 +58,7 @@ def has_major_java_version(Version):
 
 
 def start_lavalink():
+    
     if platform.system() == 'Windows':
         command = ['java', '-jar', "./Lavalink/Lavalink.jar"]
         creationflags = subprocess.CREATE_NEW_CONSOLE

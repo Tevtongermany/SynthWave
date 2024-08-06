@@ -18,7 +18,7 @@ client = disnake.Client(intents=intents)
 
 bot = commands.InteractionBot(intents=intents, reload=True)
 
-
+os.environ['LAVALINK_CONFIG'] = './Lavalink/application.yml'
 
 
 
@@ -46,13 +46,14 @@ async def bot_setup():
 
     
 async def check_if_lavalink_running():
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get("http://localhost:2333/metrics") as r:
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"http://localhost:{os.getenv('SERVER_PORT')}/metrics") as r:
                 if r.ok:
                     return
-        except:
-            print("Guh")
+    except aiohttp.ClientConnectionError as e:
+        print("Couldnt find any existing Lavalink nodes! making new one")
+
             
     has_right_java_version = utils.has_major_java_version(17)
     if has_right_java_version:

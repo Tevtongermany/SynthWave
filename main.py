@@ -1,5 +1,6 @@
 
 import asyncio
+import json
 import os
 import signal
 import sys
@@ -23,21 +24,30 @@ async def bot_setup():
     if not os.path.exists("config.json"):
         print(F"Welcome to the setup guide for {colorama.Fore.BLUE}Synth{colorama.Fore.CYAN}Wave{colorama.Fore.RESET}")
         sleep(1)
+        config = {}
         print("So first thing do you want to have a DJ role? (Basically only the people with this role can interact with the bot)")
         DJ_Role_Input = input("Y/N: ")
         if DJ_Role_Input == "Y":
-            DJ_Role = True
-            print("Please Enter a Role ID for the Dj Role! Example: 871735248461897758")
-            DJ_Role_ID_Input = input("Role ID: ")
-        print(f"""
-            For {colorama.Fore.BLUE}Synth{colorama.Fore.CYAN}Wave{colorama.Fore.RESET} To Properly work you will need lavalink! 
-            But Don't worry we will automatically download it for you!
-            """)
-        
-        if not os.path.exists("./Lavalink.jar"): 
-            await utils.download_lavalink()
+            config['DJ_Role'] = True
+            print("Please enter a Role ID for the DJ Role! Example: 871735248461897758")
+            DJ_Role_ID_Input = input("Role ID: ").strip()
+            config['DJ_Role_ID'] = DJ_Role_ID_Input
         else:
-            print("Looks like Lavalink already exists! Skipping download")
+            config['DJ_Role'] = False
+
+        print(f"""
+        For {colorama.Fore.BLUE}Synth{colorama.Fore.CYAN}Wave{colorama.Fore.RESET} to work properly, you will need Lavalink! 
+        But don't worry, we will automatically download it for you!
+        """)
+
+        if not os.path.exists("./Lavalink.jar"):
+            utils.download_lavalink()
+        else:
+            print("Looks like Lavalink already exists! Skipping download.")
+        
+        with open("config.json", "w") as config_file:
+            json.dump(config, config_file, indent=4)
+        
         print("You are done with the setup!")
     
 
@@ -63,7 +73,7 @@ async def check_if_lavalink_running():
             
 
 
-#asyncio.run(bot_setup())
+asyncio.run(bot_setup())
 asyncio.run(check_if_lavalink_running())
 
 
@@ -73,7 +83,7 @@ async def on_ready():
           f'{colorama.Fore.BLUE}Synth{colorama.Fore.CYAN}Wave{colorama.Fore.RESET} V{globals.VERSION}\n'
           f'Running on Disnake Version {disnake.__version__}'
           )
-    
+    print(utils.get_config())
     permissions = disnake.Permissions() 
     permissions.connect = True 
     permissions.speak = True 

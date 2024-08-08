@@ -1,4 +1,5 @@
 
+import json
 import os
 import platform
 import aiofiles
@@ -70,3 +71,26 @@ def start_lavalink():
         return process.pid
     except Exception as e:
         return e
+    
+
+def get_config():
+    if os.path.exists("./config.json"):
+        with open("./config.json", mode='r') as f:
+            content = f.read()
+            return json.loads(content)
+    else:
+        return None
+
+async def get_use_dj_role(config):
+    if config:
+        use_dj_role = config.get("DJ_Role")
+        return use_dj_role
+    else:
+        return None
+    
+async def get_dj_role_id(config):
+    if config:
+        DJRoleID = config.get("DJ_Role_ID")
+        return DJRoleID
+    else:
+        return None

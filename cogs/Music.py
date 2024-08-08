@@ -10,6 +10,7 @@ import globals
 import aiofiles
 import tqdm.asyncio
 from mafic import NodePool, Player, Playlist, Track, TrackEndEvent, SearchType, EndReason
+import utils
 
 
 class Music(commands.Cog):
@@ -19,6 +20,7 @@ class Music(commands.Cog):
         self.pool = NodePool(self.bot)
         self.loop = False
         self.queue: list[Track] = []
+        self.config = utils.get_config()
 
 
     @commands.Cog.listener()
@@ -58,6 +60,10 @@ class Music(commands.Cog):
 
     @commands.slash_command(name="play")
     async def play(self, inter:disnake.CommandInteraction,query:str):
+        if await utils.get_use_dj_role(config=self.config) is True:
+            dj_role = inter.author.get_role(int(utils.get_dj_role_id(config=self.config)))
+            if dj_role == None:
+                return await inter.send(embed=disnake.Embed(title="You dont have the DJ role!"))
         if not inter.author.voice:
             return await inter.send("You are not in a voice channel")
 
@@ -100,6 +106,11 @@ class Music(commands.Cog):
         
     @commands.slash_command(name="stop")
     async def stop(self,inter:disnake.CommandInteraction):
+        if await utils.get_use_dj_role(config=self.config) is True:
+            dj_role = inter.author.get_role(int(utils.get_dj_role_id(config=self.config)))
+            if dj_role == None:
+                return await inter.send(embed=disnake.Embed(title="You dont have the DJ role!"))
+            
         if not inter.author.voice:
             return await inter.send(embed=disnake.Embed(title="You are not in voice channel!"))
         
@@ -113,7 +124,7 @@ class Music(commands.Cog):
         embed.title = f"Stopping {player.current.title}"
         embed.set_author(name=f"{player.current.author}")
         embed.set_thumbnail(player.current.artwork_url)
-        await inter.send(embed=embed)
+        await inter.edit_original_response(embed=embed)
         await player.stop()
 
     @commands.slash_command(name="currently_playing")
@@ -137,10 +148,14 @@ class Music(commands.Cog):
 
     @commands.slash_command(name="volume")
     async def volume(self, inter: disnake.CommandInteraction, volume: int):
-        if not inter.author.voice:
-            return await inter.send("You are not in a voice channel")
-        
         await inter.response.defer()
+        if await utils.get_use_dj_role(config=self.config) is True:
+            dj_role = inter.author.get_role(int(utils.get_dj_role_id(config=self.config)))
+            if dj_role == None:
+                return await inter.send(embed=disnake.Embed(title="You dont have the DJ role!"))
+            
+        if not inter.author.voice:
+            return await inter.edit_original_response("You are not in a voice channel")
 
         if not inter.guild.voice_client:
             player = await inter.user.voice.channel.connect(cls=Player)
@@ -148,15 +163,19 @@ class Music(commands.Cog):
             player = inter.guild.voice_client
 
         if volume > 100:
-            await inter.send(embed= disnake.Embed(title="Cannot set volume over 100!"))
+            await inter.response(embed= disnake.Embed(title="Cannot set volume over 100!"))
             return
         await player.set_volume(volume)
         embed = disnake.Embed(title=f"Volume set to {volume}! :loud_sound:")
 
-        await inter.send(embed=embed)
+        await inter.edit_original_response(embed=embed)
 
     @commands.slash_command(name="skip")
     async def skip(self, inter:disnake.CommandInteraction):
+        if await utils.get_use_dj_role(config=self.config) is True:
+            dj_role = inter.author.get_role(int(utils.get_dj_role_id(config=self.config)))
+            if dj_role == None:
+                return await inter.send(embed=disnake.Embed(title="You dont have the DJ role!"))
         if not inter.author.voice:
             return await inter.send(disnake.Embed(title="You are not in a voice channel"))
         if not inter.guild.voice_client:
@@ -177,6 +196,10 @@ class Music(commands.Cog):
 
     @commands.slash_command(name="queue")
     async def queue(self, inter: disnake.CommandInteraction):
+        if await utils.get_use_dj_role(config=self.config) is True:
+            dj_role = inter.author.get_role(int(utils.get_dj_role_id(config=self.config)))
+            if dj_role == None:
+                return await inter.send(embed=disnake.Embed(title="You dont have the DJ role!"))
         if not inter.author.voice:
             return await inter.send("You are not in a voice channel")
 

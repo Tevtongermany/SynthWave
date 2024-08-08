@@ -18,7 +18,7 @@ def setup(bot):
     version = rjson["tag_name"]
     sourcecode_zip_url = rjson["zipball_url"]
 
-    if globals.VERSION == version:
+    if globals.VERSION >= version:
         print("No New version!")
         return
 

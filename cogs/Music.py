@@ -6,9 +6,7 @@ import os
 
 import mafic
 import emoji
-import globals
-import aiofiles
-import tqdm.asyncio
+
 from mafic import NodePool, Player, Playlist, Track, TrackEndEvent, SearchType, EndReason
 import utils
 

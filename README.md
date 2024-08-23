@@ -23,3 +23,4 @@ SERVER_ADDRESS=0.0.0.0
 Side note: 
 Its recommended to set custom emojis in the emoji.py!   
 currently only EMOJI_VIBIN is used
+

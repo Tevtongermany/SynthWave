@@ -5,6 +5,8 @@ You first need Java 17 or higher
 Get it at https://adoptium.net/de/temurin/releases/     
 python 3.11     
 
+![img](https://github.com/Tevtongermany/SynthWave/blob/main/assets/image.png?raw=true)
+
 How to set it up:       
 1. Git clone this repo using    
  ```git clone https://github.com/Tevtongermany/SynthWave.git```
